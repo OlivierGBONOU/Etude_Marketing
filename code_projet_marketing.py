@@ -80,9 +80,6 @@ def load_data():
 # Exécuter la fonction et stocker les données
 df = load_data()
 
-# Chargement des données
-df = load_data()
-
 # Fonction pour convertir les colonnes binaires en format exploitable pour les visualisations
 def prepare_binary_columns(df, prefix):
     binary_cols = [col for col in df.columns if col.startswith(prefix)]
