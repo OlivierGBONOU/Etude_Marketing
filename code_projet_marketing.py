@@ -33,7 +33,7 @@ st.markdown("*Étude sur la pertinence de proposer des services de ménage aux �
 @st.cache_data
 def load_data():
     # Chargement du fichier
-    df = pd.read_excel(r"C:\Users\DELL 3420\Desktop\Cool\Python\Marketing\Projet\base_finale.xlsx")
+    df = pd.read_excel(r"base_finale.xlsx")
 
     # Suppression de la colonne inutile
     if "Nationalite.1" in df.columns:
