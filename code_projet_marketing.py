@@ -16,6 +16,7 @@ from plotly.subplots import make_subplots
 import networkx as nx
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 import pydotplus
+import os
 from io import StringIO
 
 # Configuration de la page
@@ -33,7 +34,7 @@ st.markdown("*Étude sur la pertinence de proposer des services de ménage aux �
 @st.cache_data
 def load_data():
     # Chargement du fichier
-    df = pd.read_excel(r"base_finale.xlsx")
+    df = pd.read_excel(os.path.join(os.getcwd(), "base_finale.xlsx"))
 
     # Suppression de la colonne inutile
     if "Nationalite.1" in df.columns:
