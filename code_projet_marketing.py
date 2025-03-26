@@ -39,9 +39,8 @@ def load_data():
     file_path = os.path.join(script_dir, "base_finale.xlsx")
     
     # Chargement du fichier
-    df = pd.read_excel(file_path)
+    df = pd.read_excel(file_path, engine="openpyxl")
     
-
     # Suppression de la colonne inutile
     if "Nationalite.1" in df.columns:
         df = df.drop(columns="Nationalite.1")
