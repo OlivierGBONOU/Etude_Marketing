@@ -34,7 +34,7 @@ st.markdown("*Étude sur la pertinence de proposer des services de ménage aux �
 @st.cache_data
 def load_data():
     # Chargement du fichier
-    df = pd.read_excel(os.path.join(os.getcwd(), "base_finale.xlsx"))
+    df = pd.read_excel("base_finale.xlsx"))
 
     # Suppression de la colonne inutile
     if "Nationalite.1" in df.columns:
