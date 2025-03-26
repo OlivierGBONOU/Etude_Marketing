@@ -33,8 +33,14 @@ st.markdown("*Étude sur la pertinence de proposer des services de ménage aux �
 # Chargement des données (à remplacer par votre chargement réel)
 @st.cache_data
 def load_data():
+    script_dir = os.path.split(__file__)[0]
+    
+    # Construire le chemin complet vers le fichier Excel
+    file_path = os.path.join(script_dir, "base_finale.xlsx")
+    
     # Chargement du fichier
-    df = pd.read_excel(os.path.join("Projet", "base_finale.xlsx"))
+    df = pd.read_excel(file_path)
+    
 
     # Suppression de la colonne inutile
     if "Nationalite.1" in df.columns:
