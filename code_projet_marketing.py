@@ -18,6 +18,7 @@ from sklearn.tree import DecisionTreeClassifier, export_graphviz
 import pydotplus
 import os
 from io import StringIO
+import openpyxl
 
 # Configuration de la page
 st.set_page_config(
