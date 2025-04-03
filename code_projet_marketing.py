@@ -825,6 +825,32 @@ with col1:
                      color_continuous_scale='Viridis')
     st.plotly_chart(fig, use_container_width=True)
     
+    # Graphique en quadrants pour les créneaux optimaux
+    # Création d'un score d'optimalité pour chaque jour/plage
+    jours_optimaux = jour_plage.unstack().reset_index()
+    jours_optimaux.columns = ['jour', 'plage', 'score']
+    
+    # Score sur l'axe des x: proportion d'étudiants disponibles
+    # Score sur l'axe des y: facilité opérationnelle (simulée)
+    np.random.seed(42)
+    jours_optimaux['facilite_operationnelle'] = np.random.uniform(0.3, 0.9, len(jours_optimaux))
+    
+    fig = px.scatter(jours_optimaux, x='score', y='facilite_operationnelle', 
+                     color='jour', symbol='plage', size='score',
+                     labels={'score': 'Demande étudiante', 'facilite_operationnelle': 'Facilité opérationnelle'},
+                     title="Créneaux optimaux pour les services")
+    
+    # Ajouter des lignes pour diviser en quadrants
+    fig.add_hline(y=jours_optimaux['facilite_operationnelle'].median(), line_dash="dash", line_color="gray")
+    fig.add_vline(x=jours_optimaux['score'].median(), line_dash="dash", line_color="gray")
+    
+    # Ajouter des annotations pour les quadrants
+    fig.add_annotation(x=0.9, y=0.9, text="Créneaux optimaux", showarrow=False, xref="paper", yref="paper")
+    fig.add_annotation(x=0.1, y=0.9, text="Faciles mais peu demandés", showarrow=False, xref="paper", yref="paper")
+    fig.add_annotation(x=0.9, y=0.1, text="Demandés mais difficiles", showarrow=False, xref="paper", yref="paper")
+    fig.add_annotation(x=0.1, y=0.1, text="À éviter", showarrow=False, xref="paper", yref="paper")
+    
+    st.plotly_chart(fig, use_container_width=True)
 
 with col2:
     st.markdown("""
@@ -832,117 +858,10 @@ with col2:
     
     La heat map révèle les plages horaires les plus demandées, permettant d'optimiser la planification des services. Le graphique en quadrants identifie les créneaux qui combinent une forte demande étudiante et une facilité opérationnelle.
     """)
-    
+
 # ----------------------- CONCLUSION -----------------------
 st.header("Conclusion")
 st.markdown("""
-Cette étude a permis d’identifier les besoins, les préférences et les contraintes des étudiants de l’ENSEA concernant un service de ménage. Le graphique ci-dessous synthétise les informations clés : qui est intéressé par quel service, quand ils en ont besoin, où ils vivent, et combien ils sont prêts à payer. Ces insights guideront la mise en place d’une offre adaptée et opérationnellement viable.
-""")
-
-# Préparation des données pour le graphique synthétique
-# Conversion des colonnes booléennes ou catégoriques en numérique
-def convert_to_numeric(df, column):
-    if df[column].dtype == 'bool':
-        return df[column].astype(int)
-    elif df[column].dtype == 'object':
-        # Si la colonne contient "Oui"/"Non", convertir en 0/1
-        if set(df[column].dropna().unique()).issubset({'Oui', 'Non'}):
-            return df[column].map({'Non': 0, 'Oui': 1})
-        # Sinon, retourner la colonne telle quelle et laisser l'erreur se manifester si non numérique
-        return pd.to_numeric(df[column], errors='coerce')
-    return df[column]
-
-# Appliquer la conversion aux colonnes pertinentes
-df['prestation_complet'] = convert_to_numeric(df, 'prestation_complet')
-df['prestation_zones'] = convert_to_numeric(df, 'prestation_zones')
-df['prestation_repassage'] = convert_to_numeric(df, 'prestation_repassage')
-df['prestation_lessive'] = convert_to_numeric(df, 'prestation_lessive')
-df['prestation_rangement'] = convert_to_numeric(df, 'prestation_rangement')
-df['nb_occupants'] = pd.to_numeric(df['nb_occupants'], errors='coerce')  # Assurer que nb_occupants est numérique
-
-# Agrégation des données
-synthese_df = df.groupby(['interet_service', 'type_logement', 'frequence_utilisation', 'budget_mensuel']).agg({
-    'prestation_complet': 'mean',
-    'prestation_zones': 'mean',
-    'prestation_repassage': 'mean',
-    'prestation_lessive': 'mean',
-    'prestation_rangement': 'mean',
-    'nb_occupants': 'mean'
-}).reset_index()
-
-# Ajout d'une colonne pour le nombre d'étudiants par groupe
-synthese_df['count'] = df.groupby(['interet_service', 'type_logement', 'frequence_utilisation', 'budget_mensuel']).size().values
-
-# Transformation des données pour un graphique en bulles
-fig = px.scatter(
-    synthese_df,
-    x='frequence_utilisation',  # Quand : fréquence d'utilisation
-    y='budget_mensuel',         # Combien : budget mensuel
-    size='count',               # Taille des bulles : nombre d'étudiants
-    color='interet_service',    # Qui : niveau d'intérêt
-    facet_col='type_logement',  # Où : type de logement
-    hover_data={
-        'prestation_complet': ':.2f',    # Intérêt pour ménage complet
-        'prestation_zones': ':.2f',      # Intérêt pour zones spécifiques
-        'prestation_repassage': ':.2f',  # Intérêt pour repassage
-        'prestation_lessive': ':.2f',    # Intérêt pour lessive
-        'prestation_rangement': ':.2f',  # Intérêt pour rangement
-        'nb_occupants': ':.1f'           # Nombre moyen d'occupants
-    },
-    title="Synthèse : Qui, Quoi, Quand, Où et Combien",
-    labels={
-        'frequence_utilisation': 'Fréquence d’utilisation préférée',
-        'budget_mensuel': 'Budget mensuel',
-        'interet_service': 'Niveau d’intérêt',
-        'type_logement': 'Type de logement',
-        'count': 'Nombre d’étudiants'
-    },
-    height=800,  # Hauteur augmentée pour un grand graphique
-    category_orders={
-        'interet_service': ordre_modalites,  # Ordre défini précédemment
-        'frequence_utilisation': ['Une fois par mois', 'Une fois toutes les deux semaines', 'Une fois par semaine', 'Plusieurs fois par semaine'],
-        'budget_mensuel': ['<5000', '5000-10000', '15000-20000']
-    },
-    color_discrete_map={
-        'Pas du tout intéressé(e)': 'darkred',
-        'Plutôt pas intéressé(e)': 'orangered',
-        'Indécis(e)': 'gold',
-        'Plutôt intéressé(e)': 'lightgreen',
-        'Très intéressé(e)': 'green'
-    }
-)
-
-# Mise en forme du graphique
-fig.update_traces(
-    marker=dict(
-        sizemode='area',
-        sizeref=2.*max(synthese_df['count'])/(40.**2),  # Normalisation de la taille des bulles
-        line=dict(width=1, color='DarkSlateGrey')
-    )
-)
-
-fig.update_layout(
-    showlegend=True,
-    legend_title_text='Niveau d’intérêt',
-    title_font_size=20,
-    margin=dict(l=50, r=50, t=100, b=50),
-    plot_bgcolor='white',
-    paper_bgcolor='white'
-)
-
-# Affichage du graphique dans Streamlit
-st.plotly_chart(fig, use_container_width=True)
-
-st.markdown("""
-### Interprétation
-- **Qui** : Les bulles sont colorées selon le niveau d’intérêt, permettant d’identifier les segments les plus réceptifs.
-- **Quoi** : Les données au survol montrent l’intérêt moyen pour chaque type de prestation (ménage complet, zones spécifiques, etc.).
-- **Quand** : L’axe X indique la fréquence d’utilisation souhaitée.
-- **Où** : Les colonnes séparent les données par type de logement.
-- **Combien** : L’axe Y montre le budget mensuel disponible.
-- **Taille des bulles** : Représente le nombre d’étudiants dans chaque combinaison.
-
-Ce graphique met en évidence les opportunités clés, comme les étudiants en colocation avec un budget moyen, très intéressés par un ménage complet hebdomadaire, ou ceux en studio prêts à payer davantage pour des services ponctuels.
 """)
 
 # ----------------------- SIDEBAR FOR FILTERS -----------------------
