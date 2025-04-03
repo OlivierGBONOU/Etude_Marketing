@@ -28,7 +28,7 @@ st.set_page_config(
 )
 
 # Titre principal
-st.title("Tableau de bord marketing : Services de ménage pour étudiants ENSEA")
+st.title("Rapport du projet marketing : Services de ménage pour étudiants ENSEA")
 st.markdown("*Étude sur la pertinence de proposer des services de ménage aux étudiants de l'ENSEA*")
 
 # Chargement des données (à remplacer par votre chargement réel)
@@ -99,49 +99,16 @@ def prepare_binary_columns(df, prefix):
     
     return result_df, tasks
 
+ordre_modalites = [
+    'Pas du tout intéressé(e)', 
+    'Plutôt pas intéressé(e)', 
+    'Indécis(e)', 
+    'Plutôt intéressé(e)', 
+    'Très intéressé(e)'
+]
+
 # ----------------------- SECTION 1: ANALYSE DU MARCHÉ ET DE LA DEMANDE -----------------------
 st.header("1. Analyse du marché et de la demande")
-
-# Profil de la population étudiante
-st.subheader("Profil de la population étudiante")
-
-col1, col2 = st.columns([3, 1])
-
-with col1:
-    # Clustering pour personas
-    # Sélection des variables pour le clustering
-    cluster_vars = ['age', 'sexe', 'type_logement', 'nb_occupants', 'temps_menage_hebdo', 'importance_proprete']
-    
-    # Préparation des données pour le clustering (encodage one-hot pour variables catégorielles)
-    cluster_data = pd.get_dummies(df[cluster_vars])
-    
-    # Standardisation
-    scaler = StandardScaler()
-    cluster_data_scaled = scaler.fit_transform(cluster_data)
-    
-    # Clustering K-means
-    kmeans = KMeans(n_clusters=3, random_state=42)
-    df['cluster'] = kmeans.fit_predict(cluster_data_scaled)
-    
-    # Visualisation des clusters avec PCA
-    pca = PCA(n_components=2)
-    pca_result = pca.fit_transform(cluster_data_scaled)
-    
-    # Création du graphique
-    fig = plt.figure(figsize=(10, 6))
-    plt.scatter(pca_result[:, 0], pca_result[:, 1], c=df['cluster'], cmap='viridis')
-    plt.title('Segmentation des étudiants par clustering (3 personas)')
-    plt.xlabel('Composante principale 1')
-    plt.ylabel('Composante principale 2')
-    plt.colorbar(label='Cluster')
-    st.pyplot(fig)
-
-with col2:
-    st.markdown("""
-    **Analyse des personas**
-    
-    Le clustering révèle 3 profils distincts d'étudiants avec des besoins et comportements différents face au ménage. Ces personas peuvent guider la personnalisation des offres de services.
-    """)
 
 # Répartition par année d'études, type de logement et nombre d'occupants
 st.subheader("Répartition démographique")
@@ -149,9 +116,23 @@ st.subheader("Répartition démographique")
 col1, col2 = st.columns([3, 1])
 
 with col1:
-    tab1, tab2, tab3 = st.tabs(["Par année d'études", "Par type de logement", "Par nombre d'occupants"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Par sexe", "Par année d'études", "Par type de logement", "Par nombre d'occupants", "Par nationalité"])
     
     with tab1:
+        # Calculer les valeurs et réinitialiser l'index
+        sexe_counts = df['sexe'].value_counts().reset_index()
+        sexe_counts.columns = ['sexe', 'count']
+        
+        fig = px.pie(sexe_counts, 
+                    names='sexe', 
+                    values='count', 
+                    labels={'sexe': "Sexe", 'count': "Nombre d'étudiants"},
+                    title="Répartition par sexe",
+                    hole=0.4)  # Ajout du trou central pour créer un donut
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
+    with tab2:
         # Calculer les valeurs et réinitialiser l'index
         annee_counts = df['annee_etudes'].value_counts().reset_index()
         
@@ -163,7 +144,7 @@ with col1:
         fig.update_layout(title="Répartition par année d'études")
         st.plotly_chart(fig, use_container_width=True)
     
-    with tab2:
+    with tab3:
         # Calculer les valeurs et réinitialiser l'index
         type_logement_counts = df['type_logement'].value_counts().reset_index()
         
@@ -175,7 +156,7 @@ with col1:
         fig.update_layout(title="Répartition par type de logement")
         st.plotly_chart(fig, use_container_width=True)
     
-    with tab3:
+    with tab4:
         # Calculer les valeurs et réinitialiser l'index
         nb_occupants_counts = df['nb_occupants'].value_counts().reset_index()
         
@@ -184,6 +165,18 @@ with col1:
                      y='count', 
                      labels={'nb_occupants': "Nombre d'occupants", 'count': "Nombre d'étudiants"},
                      color='nb_occupants')
+        fig.update_layout(title="Répartition par nombre d'occupants")
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with tab5:
+        # Calculer les valeurs et réinitialiser l'index
+        nb_occupants_counts = df['Nationalite'].value_counts().reset_index()
+        
+        fig = px.bar(nb_occupants_counts, 
+                     x='Nationalite', 
+                     y='count', 
+                     labels={'Nationalite': "Nationalité", 'count': "Nombre d'étudiants"},
+                     color='Nationalite')
         fig.update_layout(title="Répartition par nombre d'occupants")
         st.plotly_chart(fig, use_container_width=True)
 
@@ -200,38 +193,70 @@ st.subheader("Évaluation de l'intérêt pour le service")
 col1, col2 = st.columns([3, 1])
 
 with col1:
-    tab1, tab2, tab3 = st.tabs(["Intérêt global", "Par type de logement", "Par année d'études"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Intérêt global", "Par sexe", "Par type de logement", "Par année d'études", "Par nationalité"])
     
     with tab1:
         # Graphique circulaire pour "interet_service"
         fig = px.pie(df, names='interet_service', 
                      title="Intérêt global pour le service de ménage",
                      color='interet_service', 
-                     color_discrete_map={'Oui':'green', 'Peut-être':'gold', 'Non':'crimson'})
+                     category_orders={'interet_service': ordre_modalites},
+                     color_discrete_map={'Pas du tout intéressé(e)': 'darkred',  'Plutôt pas intéressé(e)': 'orangered', 'Indécis(e)': 'gold', 'Plutôt intéressé(e)': 'lightgreen', 'Très intéressé(e)': 'green'})
         st.plotly_chart(fig, use_container_width=True)
-    
-    with tab2:
-        # Graphique à mosaïque croisant "type_logement" et "interet_service"
-        # Créons une table de contingence
-        crosstab = pd.crosstab(df['type_logement'], df['interet_service'], normalize='index')
-        crosstab_long = crosstab.reset_index().melt(id_vars='type_logement', value_name='proportion')
         
-        fig = px.bar(crosstab_long, x='type_logement', y='proportion', color='interet_service',
-                     labels={'type_logement': 'Type de logement', 'proportion': 'Proportion'},
-                     title="Intérêt pour le service selon le type de logement",
-                     color_discrete_map={'Oui':'green', 'Peut-être':'gold', 'Non':'crimson'})
+    with tab2:
+        # Graphique à mosaïque croisant "sexe" et "interet_service" avec effectifs bruts
+        # Création de la table de contingence
+        crosstab_counts = pd.crosstab(df['sexe'], df['interet_service'])
+        crosstab_long_counts = crosstab_counts.reset_index().melt(id_vars='sexe', value_name='effectif')
+        
+        fig = px.bar(crosstab_long_counts, x='sexe', y='effectif', color='interet_service',
+                    labels={'sexe': 'Sexe', 'effectif': "Nombre d'étudiants"},
+                    title="Intérêt pour le service selon le sexe (effectifs bruts)",
+                    category_orders={'interet_service': ordre_modalites},
+                    color_discrete_map={'Pas du tout intéressé(e)': 'darkred',  'Plutôt pas intéressé(e)': 'orangered', 'Indécis(e)': 'gold', 'Plutôt intéressé(e)': 'lightgreen', 'Très intéressé(e)': 'green'})
         fig.update_layout(barmode='stack')
         st.plotly_chart(fig, use_container_width=True)
     
     with tab3:
-        # Diagramme en barres empilées montrant le pourcentage d'intérêt par "annee_etudes"
-        crosstab = pd.crosstab(df['annee_etudes'], df['interet_service'], normalize='index')
-        crosstab_long = crosstab.reset_index().melt(id_vars='annee_etudes', value_name='proportion')
+        # Graphique à mosaïque croisant "type_logement" et "interet_service" avec effectifs bruts
+        # Création de la table de contingence
+        crosstab_counts = pd.crosstab(df['type_logement'], df['interet_service'])
+        crosstab_long_counts = crosstab_counts.reset_index().melt(id_vars='type_logement', value_name='effectif')
         
-        fig = px.bar(crosstab_long, x='annee_etudes', y='proportion', color='interet_service',
-                     labels={'annee_etudes': "Année d'études", 'proportion': 'Proportion'},
-                     title="Intérêt pour le service selon l'année d'études",
-                     color_discrete_map={'Oui':'green', 'Peut-être':'gold', 'Non':'crimson'})
+        fig = px.bar(crosstab_long_counts, x='type_logement', y='effectif', color='interet_service',
+                    labels={'type_logement': 'Type de logement', 'effectif': "Nombre d'étudiants"},
+                    title="Intérêt pour le service selon le type de logement (effectifs bruts)",
+                    category_orders={'interet_service': ordre_modalites},
+                    color_discrete_map={'Pas du tout intéressé(e)': 'darkred',  'Plutôt pas intéressé(e)': 'orangered', 'Indécis(e)': 'gold', 'Plutôt intéressé(e)': 'lightgreen', 'Très intéressé(e)': 'green'})
+        fig.update_layout(barmode='stack')
+        st.plotly_chart(fig, use_container_width=True)
+        
+    with tab4:
+        # Graphique à mosaïque croisant "annee_etudes" et "interet_service" avec effectifs bruts
+        # Création de la table de contingence
+        crosstab_counts = pd.crosstab(df['annee_etudes'], df['interet_service'])
+        crosstab_long_counts = crosstab_counts.reset_index().melt(id_vars='annee_etudes', value_name='effectif')
+        
+        fig = px.bar(crosstab_long_counts, x='annee_etudes', y='effectif', color='interet_service',
+                    labels={'annee_etudes': "Année d'études", 'effectif': "Nombre d'étudiants"},
+                    title="Intérêt pour le service selon l'année d'études (effectifs bruts)",
+                    category_orders={'interet_service': ordre_modalites},
+                    color_discrete_map={'Pas du tout intéressé(e)': 'darkred',  'Plutôt pas intéressé(e)': 'orangered', 'Indécis(e)': 'gold', 'Plutôt intéressé(e)': 'lightgreen', 'Très intéressé(e)': 'green'})
+        fig.update_layout(barmode='stack')
+        st.plotly_chart(fig, use_container_width=True)
+        
+    with tab5:
+        # Graphique à mosaïque croisant "Nationalite" et "interet_service"
+        # Créons une table de contingence
+        crosstab = pd.crosstab(df['Nationalite'], df['interet_service'], normalize='index')
+        crosstab_long = crosstab.reset_index().melt(id_vars='Nationalite', value_name='proportion')
+        
+        fig = px.bar(crosstab_long, x='Nationalite', y='proportion', color='interet_service',
+                     labels={'Nationalite': 'Nationalité', 'proportion': 'Proportion'},
+                     title="Intérêt pour le service selon la nationalité",
+                     category_orders={'interet_service': ordre_modalites},
+                     color_discrete_map={'Pas du tout intéressé(e)': 'darkred',  'Plutôt pas intéressé(e)': 'orangered', 'Indécis(e)': 'gold', 'Plutôt intéressé(e)': 'lightgreen', 'Très intéressé(e)': 'green'})
         fig.update_layout(barmode='stack')
         st.plotly_chart(fig, use_container_width=True)
 
@@ -249,7 +274,7 @@ col1, col2 = st.columns([3, 1])
 
 with col1:
     # Diagramme en barres horizontales pour "raison_non_interet"
-    raison_non_df = df[df['interet_service'] == 'Non']['raison_non_interet'].value_counts().reset_index()
+    raison_non_df = df[df['interet_service'] == 'Pas du tout intéressé(e)']['raison_non_interet'].value_counts().reset_index()
     fig = px.bar(raison_non_df, y='raison_non_interet', x='count', 
                  title="Raisons du désintérêt pour le service",
                  labels={'raison_non_interet': 'Raison', 'count': 'Nombre d\'étudiants'},
@@ -257,46 +282,74 @@ with col1:
     fig.update_layout(yaxis={'categoryorder':'total ascending'})
     st.plotly_chart(fig, use_container_width=True)
     
-    # Créons un graphique Sankey simplifié pour période_difficile → freins → intérêt_service
-    # Préparation des données pour le diagramme Sankey
+    seuil_pourcentage=4
+    
+    # Préparation des données
     periode_count = df.groupby(['periode_difficile', 'principaux_frein']).size().reset_index(name='count')
     frein_interet = df.groupby(['principaux_frein', 'interet_service']).size().reset_index(name='count')
     
-    # Création de la liste des nœuds
-    nodes = list(set(periode_count['periode_difficile'].tolist() + 
-                     periode_count['principaux_frein'].tolist() + 
-                     frein_interet['interet_service'].tolist()))
+    # Filtrer les connexions pour ne garder que celles dépassant un certain seuil
+    total_periode_frein = periode_count['count'].sum()
+    total_frein_interet = frein_interet['count'].sum()
+    
+    # Calculer le seuil absolu basé sur le pourcentage
+    seuil_periode_frein = (seuil_pourcentage / 100) * total_periode_frein
+    seuil_frein_interet = (seuil_pourcentage / 100) * total_frein_interet
+    
+    # Filtrer les connexions significatives
+    periode_count_filtered = periode_count[periode_count['count'] >= seuil_periode_frein]
+    frein_interet_filtered = frein_interet[frein_interet['count'] >= seuil_frein_interet]
+    
+    # Création de la liste des nœuds (uniquement ceux qui restent après filtrage)
+    nodes = list(set(periode_count_filtered['periode_difficile'].tolist() + 
+                    periode_count_filtered['principaux_frein'].tolist() + 
+                    frein_interet_filtered['interet_service'].tolist()))
     
     # Création d'un mapping pour les indices des nœuds
     node_indices = {node: i for i, node in enumerate(nodes)}
     
     # Création des liens
-    links_periode_frein = [dict(source=node_indices[row['periode_difficile']], 
-                               target=node_indices[row['principaux_frein']], 
-                               value=row['count']) for _, row in periode_count.iterrows()]
+    links_periode_frein = [dict(source=node_indices.get(row['periode_difficile']), 
+                               target=node_indices.get(row['principaux_frein']), 
+                               value=row['count']) 
+                         for _, row in periode_count_filtered.iterrows() 
+                         if row['periode_difficile'] in node_indices and row['principaux_frein'] in node_indices]
     
-    links_frein_interet = [dict(source=node_indices[row['principaux_frein']], 
-                               target=node_indices[row['interet_service']], 
-                               value=row['count']) for _, row in frein_interet.iterrows()]
+    links_frein_interet = [dict(source=node_indices.get(row['principaux_frein']), 
+                               target=node_indices.get(row['interet_service']), 
+                               value=row['count']) 
+                         for _, row in frein_interet_filtered.iterrows()
+                         if row['principaux_frein'] in node_indices and row['interet_service'] in node_indices]
     
     links = links_periode_frein + links_frein_interet
     
     # Création du diagramme Sankey
+    # Couleur par défaut (bleu clair) et couleur au survol (bleu foncé)
+    default_color = 'rgba(173, 216, 230, 0.8)'  # Bleu clair
+    hover_color = 'rgba(0, 0, 139, 0.8)'  # Bleu foncé
+
     fig = go.Figure(data=[go.Sankey(
         node=dict(
             pad=15,
             thickness=20,
             line=dict(color="black", width=0.5),
-            label=nodes
+            label=nodes        
         ),
         link=dict(
             source=[link['source'] for link in links],
             target=[link['target'] for link in links],
-            value=[link['value'] for link in links]
+            value=[link['value'] for link in links],
+            color=[default_color] * len(links),
+            hoverinfo="all",
+            customdata=[hover_color] * len(links)  # Couleur au survol
         )
     )])
     
-    fig.update_layout(title_text="Parcours période difficile → freins → intérêt pour le service", height=500)
+    fig.update_layout(
+        title_text="Parcours simplifié: période difficile → freins → intérêt pour le service",
+        height=600,
+        font=dict(size=12)
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 with col2:
@@ -305,7 +358,128 @@ with col2:
     
     L'identification des principaux freins nous permet de comprendre pourquoi certains étudiants ne sont pas intéressés par le service. Le diagramme Sankey illustre comment les périodes difficiles et les freins influencent l'intérêt pour le service.
     """)
+    
 
+    # Profil de la population étudiante
+st.subheader("Profil de la population estudiantine")
+
+# Clustering pour personas
+# Sélection des variables pour le clustering
+cluster_vars = ['type_logement', 'nb_occupants', 'temps_menage_hebdo', 'importance_proprete']
+
+# Préparation des données pour le clustering (encodage one-hot pour variables catégorielles)
+cluster_data = pd.get_dummies(df[cluster_vars])
+cluster_data = cluster_data.drop("importance_proprete_Très importante", axis=1)
+
+# Standardisation
+scaler = StandardScaler()
+cluster_data_scaled = scaler.fit_transform(cluster_data)
+
+# Clustering K-means
+kmeans = KMeans(n_clusters=3, random_state=42)
+df['cluster'] = kmeans.fit_predict(cluster_data_scaled)
+
+# Visualisation des clusters avec PCA
+pca = PCA()  # Pas de limitation du nombre de composantes pour l'éboulis
+pca_full = pca.fit_transform(cluster_data_scaled)
+
+# Garder uniquement les 2 premières composantes pour la visualisation
+pca_result = pca_full[:, :2]
+
+# Récupération des valeurs propres
+explained_variance = pca.explained_variance_
+explained_variance_ratio = pca.explained_variance_ratio_
+
+# Création des sous-graphiques: un pour l'éboulis des valeurs propres et un pour le cercle de corrélation
+fig1, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+
+# Graphique 1: Histogramme des valeurs propres
+n_components = min(10, len(explained_variance))  # Limiter à 10 ou moins si moins de variables
+x_range = range(1, n_components + 1)
+
+# Créer l'histogramme
+ax1.bar(x_range, explained_variance[:n_components], width=0.8, align='center')
+ax1.set_title('Histogramme des valeurs propres')
+ax1.set_xlabel('Composante principale')
+ax1.set_ylabel('Valeur propre')
+ax1.grid(True)
+
+# Ajouter le pourcentage de variance expliquée au-dessus des barres
+for i, ratio in enumerate(explained_variance_ratio[:n_components]):
+    ax1.text(i + 1, explained_variance[i], f'{ratio:.1%}', 
+             va='bottom', ha='center', fontsize=8)
+
+# Affichage de la variance cumulée
+cum_variance_ratio = np.cumsum(explained_variance_ratio[:n_components])
+ax1_twin = ax1.twinx()
+ax1_twin.plot(x_range, cum_variance_ratio, 'r-', marker='s', linewidth=2)
+ax1_twin.set_ylabel('Variance cumulée expliquée', color='r')
+ax1_twin.tick_params(axis='y', labelcolor='r')
+ax1_twin.grid(False)
+
+# Graphique 2: Cercle de corrélation
+# Utiliser uniquement les 2 premières composantes pour le cercle de corrélation
+pca_components = pca.components_[:2, :]
+feature_names = cluster_data.columns
+
+# Tracer le cercle de corrélation
+circle = plt.Circle((0, 0), 1, fill=False, color='gray', linestyle='--')
+ax2.add_patch(circle)
+
+# Définir un seuil de corrélation (ne montrer que les variables fortement corrélées)
+correlation_threshold = 0.38
+
+# Tracer les flèches pour chaque variable qui dépasse le seuil
+for i, (x, y) in enumerate(zip(pca_components[0, :], pca_components[1, :])):
+    # Calculer la longueur du vecteur (force de la corrélation)
+    length = np.sqrt(x**2 + y**2)
+    
+    # N'afficher que les variables qui dépassent le seuil
+    if length > correlation_threshold:
+        ax2.arrow(0, 0, x, y, head_width=0.05, head_length=0.05, fc='blue', ec='blue')
+        ax2.text(x * 1.1, y * 1.1, feature_names[i], color='black', ha='center', va='center', fontweight='bold')
+    # Optionnel : afficher en gris clair les variables sous le seuil
+    else:
+        ax2.arrow(0, 0, x, y, head_width=0.03, head_length=0.03, fc='lightgray', ec='lightgray', alpha=0.5)
+        ax2.text(x * 1.1, y * 1.1, feature_names[i], color='gray', ha='center', va='center', alpha=0.5)
+
+ax2.set_xlim(-1.2, 1.2)
+ax2.set_ylim(-1.2, 1.2)
+ax2.grid(True)
+ax2.set_title('Cercle de corrélation')
+ax2.set_xlabel('Composante principale 1')
+ax2.set_ylabel('Composante principale 2')
+
+# Ajout d'une ligne horizontale et verticale pour aider à l'interprétation
+ax2.axhline(y=0, color='gray', linestyle='-', alpha=0.3)
+ax2.axvline(x=0, color='gray', linestyle='-', alpha=0.3)
+
+plt.tight_layout()
+st.pyplot(fig1)
+
+# Graphique 3: Segmentation des étudiants (maintenant en bas)
+fig2, ax3 = plt.subplots(figsize=(9, 5))
+scatter = ax3.scatter(pca_result[:, 0], pca_result[:, 1], c=df['cluster'], cmap='viridis')
+ax3.set_title('Segmentation des étudiants par clustering (3 personas)')
+ax3.set_xlabel('Composante principale 1')
+ax3.set_ylabel('Composante principale 2')
+plt.tight_layout()
+st.pyplot(fig2)
+
+# Colonne d'explication
+st.markdown("""
+**Analyse des personas et de l'ACP**
+
+L'éboulis des valeurs propres montre l'importance relative de chaque composante principale et aide à déterminer le nombre optimal de dimensions à conserver.
+
+**Interprétation du cercle de corrélation :**
+
+Le cercle de corrélation montre comment les variables originales sont liées aux deux composantes principales. Les variables en **gras** sont celles qui sont fortement corrélées (seuil > 0.5) avec les composantes principales et donc les plus influentes dans la formation des clusters. Les variables en gris clair sont moins déterminantes.
+
+**Segmentation des étudiants :**
+
+Le clustering révèle 3 profils distincts d'étudiants avec des besoins et comportements différents face au ménage. Ces personas peuvent guider la personnalisation des offres de services.
+""")
 # ----------------------- SECTION 2: ANALYSE DES BESOINS SPÉCIFIQUES -----------------------
 st.header("2. Analyse des besoins spécifiques")
 
@@ -316,10 +490,14 @@ col1, col2 = st.columns([3, 1])
 
 with col1:
     # Boîtes à moustaches comparant "temps_menage_hebdo" selon le type de logement
-    fig = px.box(df, x='type_logement', y='temps_menage_hebdo_num', 
-                 color='type_logement',
-                 labels={'temps_menage_hebdo_num': 'Temps hebdomadaire (heures)', 'type_logement': 'Type de logement'},
-                 title="Temps consacré au ménage selon le type de logement")
+    contingency_table = pd.crosstab(df['temps_menage_hebdo_num'], df['type_logement'])
+
+    # Création du heatmap
+    fig = px.imshow(contingency_table,
+                labels=dict(x="Type de logement", y="Temps hebdomadaire", color="Fréquence"),
+                title="Temps consacré au ménage selon le type de logement",
+                color_continuous_scale="Blues",
+                y=contingency_table.index)
     st.plotly_chart(fig, use_container_width=True)
     
     # Scatter plot croisant "difficulte_etudes_menage" et "temps_menage_hebdo"
@@ -398,60 +576,6 @@ with col1:
     )
     
     st.plotly_chart(fig, use_container_width=True)
-    
-    # Simulons une analyse factorielle simplifiée
-    # Nous allons utiliser PCA comme proxy pour visualiser les relations
-
-    # Vérifier les types
-    print(taches_df.dtypes)
-
-    # Nettoyage des données
-    taches_df_numeric = taches_df.drop('type_logement', axis=1).apply(pd.to_numeric, errors='coerce')
-
-    # Remplacer NaN et infinis
-    taches_df_numeric.replace([np.inf, -np.inf], np.nan, inplace=True)
-    taches_df_numeric.fillna(0, inplace=True)  # Vous pouvez aussi utiliser .fillna(taches_df_numeric.mean())
-
-    # Vérifier si tout est bien numérique
-    print("Nombre de NaN :", taches_df_numeric.isna().sum().sum())
-    print("Valeurs infinies :", np.isinf(taches_df_numeric).sum())
-
-    # Appliquer PCA
-    taches_pca = PCA(n_components=2)
-    taches_pca_result = taches_pca.fit_transform(taches_df_numeric)
-
-    print("PCA appliqué avec succès !")
-    
-    taches_pca_df = pd.DataFrame({
-        'PC1': taches_pca_result[:, 0],
-        'PC2': taches_pca_result[:, 1],
-        'type_logement': df['type_logement'],
-        'difficulte_etudes_menage': df['difficulte_etudes_menage']
-    })
-    
-    fig = px.scatter(taches_pca_df, x='PC1', y='PC2', 
-                    color='type_logement', symbol='difficulte_etudes_menage',
-                    labels={'PC1': 'Composante 1', 'PC2': 'Composante 2'},
-                    title="Analyse factorielle des tâches contraignantes")
-    
-    # Ajouter les vecteurs de contribution des variables originales
-    loadings = taches_pca.components_.T
-    for i, task in enumerate(taches_list):
-        fig.add_annotation(
-            x=loadings[i, 0] * 3,  # multiplier pour rendre visible
-            y=loadings[i, 1] * 3,
-            ax=0,
-            ay=0,
-            xanchor="center",
-            yanchor="bottom",
-            text=task,
-            arrowhead=2,
-            arrowsize=1,
-            arrowwidth=2,
-            arrowcolor="#636363"
-        )
-    
-    st.plotly_chart(fig, use_container_width=True)
 
 with col2:
     st.markdown("""
@@ -479,23 +603,6 @@ with col1:
                  color='periode_difficile')
     st.plotly_chart(fig, use_container_width=True)
     
-    # Heat map temporelle (simulation)
-    # Créons des données pour simuler la charge académique au cours de l'année
-    months = ['Septembre', 'Octobre', 'Novembre', 'Décembre', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin']
-    academic_load = [
-        [0.7, 0.4, 0.6, 0.9, 0.8, 0.5, 0.6, 0.7, 0.9, 0.8],  # 1A
-        [0.6, 0.5, 0.7, 0.8, 0.9, 0.6, 0.7, 0.8, 0.9, 0.7],  # 2A
-        [0.5, 0.6, 0.7, 0.7, 0.8, 0.7, 0.8, 0.9, 0.9, 0.6]   # 3A
-    ]
-    
-    heatmap_df = pd.DataFrame(academic_load, columns=months, index=['1A', '2A', '3A'])
-    
-    fig = px.imshow(heatmap_df, text_auto=True, aspect="auto",
-                     title="Charge académique au cours de l'année",
-                     labels=dict(x="Mois", y="Année d'études", color="Intensité"),
-                     color_continuous_scale='Reds')
-    st.plotly_chart(fig, use_container_width=True)
-
 with col2:
     st.markdown("""
     **Analyse des périodes critiques**
@@ -522,15 +629,6 @@ with col1:
     fig.add_trace(
         go.Bar(x=budget_counts['budget_mensuel'], y=budget_counts['count'], name="Fréquence"),
         secondary_y=False,
-    )
-    
-    # Calculer la distribution cumulative
-    budget_counts['cumulative'] = budget_counts['count'].cumsum() / budget_counts['count'].sum()
-    
-    # Ligne cumulative
-    fig.add_trace(
-        go.Scatter(x=budget_counts['budget_mensuel'], y=budget_counts['cumulative'], name="Cumulative", line=dict(color='red')),
-        secondary_y=True,
     )
     
     fig.update_layout(
@@ -628,7 +726,7 @@ with col1:
                      text='Prestation', size='Potentiel de revenus',
                      title="Matrice BCG adaptée des prestations",
                      labels={'Attractivité': 'Attractivité (proportion d\'intéressés)', 
-                             'Potentiel de revenus': 'Potentiel de revenus (€)'},
+                             'Potentiel de revenus': 'Potentiel de revenus'},
                      color='Prestation')
     
     # Ajouter des lignes pour diviser en quadrants
@@ -727,32 +825,6 @@ with col1:
                      color_continuous_scale='Viridis')
     st.plotly_chart(fig, use_container_width=True)
     
-    # Graphique en quadrants pour les créneaux optimaux
-    # Création d'un score d'optimalité pour chaque jour/plage
-    jours_optimaux = jour_plage.unstack().reset_index()
-    jours_optimaux.columns = ['jour', 'plage', 'score']
-    
-    # Score sur l'axe des x: proportion d'étudiants disponibles
-    # Score sur l'axe des y: facilité opérationnelle (simulée)
-    np.random.seed(42)
-    jours_optimaux['facilite_operationnelle'] = np.random.uniform(0.3, 0.9, len(jours_optimaux))
-    
-    fig = px.scatter(jours_optimaux, x='score', y='facilite_operationnelle', 
-                     color='jour', symbol='plage', size='score',
-                     labels={'score': 'Demande étudiante', 'facilite_operationnelle': 'Facilité opérationnelle'},
-                     title="Créneaux optimaux pour les services")
-    
-    # Ajouter des lignes pour diviser en quadrants
-    fig.add_hline(y=jours_optimaux['facilite_operationnelle'].median(), line_dash="dash", line_color="gray")
-    fig.add_vline(x=jours_optimaux['score'].median(), line_dash="dash", line_color="gray")
-    
-    # Ajouter des annotations pour les quadrants
-    fig.add_annotation(x=0.9, y=0.9, text="Créneaux optimaux", showarrow=False, xref="paper", yref="paper")
-    fig.add_annotation(x=0.1, y=0.9, text="Faciles mais peu demandés", showarrow=False, xref="paper", yref="paper")
-    fig.add_annotation(x=0.9, y=0.1, text="Demandés mais difficiles", showarrow=False, xref="paper", yref="paper")
-    fig.add_annotation(x=0.1, y=0.1, text="À éviter", showarrow=False, xref="paper", yref="paper")
-    
-    st.plotly_chart(fig, use_container_width=True)
 
 with col2:
     st.markdown("""
@@ -760,149 +832,117 @@ with col2:
     
     La heat map révèle les plages horaires les plus demandées, permettant d'optimiser la planification des services. Le graphique en quadrants identifie les créneaux qui combinent une forte demande étudiante et une facilité opérationnelle.
     """)
-
-# Modèle de propension à l'achat
-st.subheader("Modèle de propension à l'achat")
-
-col1, col2 = st.columns([3, 1])
-
-with col1:
-    # Arbre de décision pour visualiser les facteurs déterminants
-    # Préparation des données
-    X_cols = ['temps_menage_hebdo_num', 'difficulte_num', 'frein_temps', 'frein_motivation', 
-             'budget_mensuel_num', 'importance_proprete', 'invites_reguliers']
     
-    # Encodage one-hot pour les variables catégorielles
-    X_encoded = pd.get_dummies(df[X_cols])
-    
-    # Variable cible: conversion de interet_service en binaire (Oui=1, Non/Peut-être=0)
-    y = (df['interet_service'] == 'Oui').astype(int)
-    
-    # Vérification des valeurs manquantes dans X_encoded et y
-    if X_encoded.isnull().any().any():
-        st.warning("Il y a des valeurs manquantes dans X_encoded. Nous allons les remplir.")
-        X_encoded.fillna(X_encoded.mean(), inplace=True)  # Remplir les NaN par la moyenne
-    
-    if y.isnull().any():
-        st.warning("Il y a des valeurs manquantes dans y. Nous allons les remplir.")
-        y.fillna(0, inplace=True)  # Remplir les NaN de y par 0 (Non intéressé)
-    
-    # Vérification du type des données dans X_train et y_train
-    if not X_encoded.select_dtypes(include=[np.number]).shape[1] == X_encoded.shape[1]:
-        st.error("Toutes les colonnes de X_encoded ne sont pas numériques.")
-    if not y.dtype == 'int64':
-        st.error("La variable cible y n'est pas numérique.")
-    
-    # Division des données pour l'entraînement et le test
-    X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.3, random_state=42)
-    
-    # Vérification des formes des données
-    st.write(f"Shape de X_train: {X_train.shape}")
-    st.write(f"Shape de y_train: {y_train.shape}")
-    
-    # Entraînement de l'arbre de décision
-    dt = DecisionTreeClassifier(max_depth=3, random_state=42)
-    dt.fit(X_train, y_train)
-    
-    # Génération d'un arbre simple pour visualisation
-    st.write("Arbre de décision interactif des facteurs d'intérêt")
-    
-    # Créer une visualisation simplifiée d'arbre de décision
-    tree_rules = []
-    
-    def traverse_tree(node, depth, path):
-        if node < 0:
-            return
-        
-        feature_name = X_encoded.columns[dt.tree_.feature[node]] if dt.tree_.feature[node] >= 0 else None
-        threshold = dt.tree_.threshold[node] if dt.tree_.feature[node] >= 0 else None
-        
-        if feature_name is not None:
-            path_left = path + f"{feature_name} <= {threshold:.2f} | "
-            path_right = path + f"{feature_name} > {threshold:.2f} | "
-            
-            traverse_tree(dt.tree_.children_left[node], depth + 1, path_left)
-            traverse_tree(dt.tree_.children_right[node], depth + 1, path_right)
-        else:
-            samples = dt.tree_.n_node_samples[node]
-            class_proba = dt.tree_.value[node][0] / samples
-            
-            print(f"Valeur de class_proba: {class_proba}")  # Ajout pour vérifier le contenu
-
-            if isinstance(class_proba, (list, np.ndarray)) and len(class_proba) > 1:
-                majority_class = 'Intéressé' if class_proba[1] > 0.5 else 'Non intéressé'
-            else:
-                majority_class = 'Non déterminé'  # Correction pour éviter l'erreur
-
-            confidence = max(class_proba[0], class_proba[1]) * 100 if len(class_proba) > 1 else 0
-            
-            rule = f"{path[:-3]} → {majority_class} ({confidence:.1f}% de confiance, {samples} étudiants)"
-            tree_rules.append((rule, confidence, samples))
-
-    
-    # Commencer le parcours à la racine
-    traverse_tree(0, 0, "")
-    
-    # Trier les règles par confiance et nombre d'étudiants
-    tree_rules.sort(key=lambda x: (x[1], x[2]), reverse=True)
-    
-    # Afficher les règles dans un dataframe
-    rules_df = pd.DataFrame(tree_rules, columns=['Règle', 'Confiance (%)', 'Nb étudiants'])
-    st.dataframe(rules_df)
-    
-    # Régression logistique
-    # Préparation des données (utilisation des mêmes données que pour l'arbre)
-    
-    # Vérification des données avant d'entraîner le modèle
-    if X_train.isnull().any().any() or y_train.isnull().any():
-        st.error("Les données contiennent encore des valeurs manquantes. Veuillez vérifier.")
-    else:
-        # Entraînement du modèle
-        try:
-            lr = LogisticRegression(random_state=42)
-            lr.fit(X_train, y_train)
-            
-            # Extraction des coefficients
-            coef_df = pd.DataFrame({
-                'Variable': X_encoded.columns,
-                'Coefficient': lr.coef_[0]
-            }).sort_values('Coefficient', ascending=False)
-            
-            # Visualisation des coefficients
-            fig = px.bar(coef_df, x='Coefficient', y='Variable', 
-                         labels={'Coefficient': 'Impact sur la probabilité d\'intérêt', 'Variable': 'Facteur'},
-                         title="Facteurs influençant l'intérêt pour le service (Régression logistique)",
-                         orientation='h')
-            st.plotly_chart(fig, use_container_width=True)
-        
-        except ValueError as e:
-            st.error(f"Erreur lors de l'entraînement du modèle de régression logistique : {e}")
-
-with col2:
-    st.markdown("""
-    **Analyse prédictive**
-    
-    L'arbre de décision identifie les combinaisons de facteurs qui prédisent l'intérêt pour le service, permettant une segmentation fine des prospects et une personnalisation des offres.
-    
-    La régression logistique quantifie l'impact de chaque facteur sur la probabilité d'intérêt, guidant ainsi les priorités marketing et la communication.
-    """)
-
 # ----------------------- CONCLUSION -----------------------
 st.header("Conclusion")
 st.markdown("""
-Cette analyse approfondie du marché des services de ménage pour les étudiants de l'ENSEA révèle un potentiel intéressant, particulièrement pour certains segments clés :
+Cette étude a permis d’identifier les besoins, les préférences et les contraintes des étudiants de l’ENSEA concernant un service de ménage. Le graphique ci-dessous synthétise les informations clés : qui est intéressé par quel service, quand ils en ont besoin, où ils vivent, et combien ils sont prêts à payer. Ces insights guideront la mise en place d’une offre adaptée et opérationnellement viable.
+""")
 
-1. **Segments cibles prioritaires** : Étudiants en période d'examens, habitants en colocation ou studio, et ceux avec une charge académique élevée.
+# Préparation des données pour le graphique synthétique
+# Conversion des colonnes booléennes ou catégoriques en numérique
+def convert_to_numeric(df, column):
+    if df[column].dtype == 'bool':
+        return df[column].astype(int)
+    elif df[column].dtype == 'object':
+        # Si la colonne contient "Oui"/"Non", convertir en 0/1
+        if set(df[column].dropna().unique()).issubset({'Oui', 'Non'}):
+            return df[column].map({'Non': 0, 'Oui': 1})
+        # Sinon, retourner la colonne telle quelle et laisser l'erreur se manifester si non numérique
+        return pd.to_numeric(df[column], errors='coerce')
+    return df[column]
 
-2. **Offre de services optimale** : Une combinaison de ménage de zones spécifiques (notamment salle de bain et cuisine) et de services complets occasionnels.
+# Appliquer la conversion aux colonnes pertinentes
+df['prestation_complet'] = convert_to_numeric(df, 'prestation_complet')
+df['prestation_zones'] = convert_to_numeric(df, 'prestation_zones')
+df['prestation_repassage'] = convert_to_numeric(df, 'prestation_repassage')
+df['prestation_lessive'] = convert_to_numeric(df, 'prestation_lessive')
+df['prestation_rangement'] = convert_to_numeric(df, 'prestation_rangement')
+df['nb_occupants'] = pd.to_numeric(df['nb_occupants'], errors='coerce')  # Assurer que nb_occupants est numérique
 
-3. **Stratégie tarifaire** : Adapter les tarifs au budget limité des étudiants (20-50€/mois), avec des offres promotionnelles en période d'examens.
+# Agrégation des données
+synthese_df = df.groupby(['interet_service', 'type_logement', 'frequence_utilisation', 'budget_mensuel']).agg({
+    'prestation_complet': 'mean',
+    'prestation_zones': 'mean',
+    'prestation_repassage': 'mean',
+    'prestation_lessive': 'mean',
+    'prestation_rangement': 'mean',
+    'nb_occupants': 'mean'
+}).reset_index()
 
-4. **Planification opérationnelle** : Concentrer les services sur les créneaux de fin de semaine et après-midi qui combinent forte demande et facilité opérationnelle.
+# Ajout d'une colonne pour le nombre d'étudiants par groupe
+synthese_df['count'] = df.groupby(['interet_service', 'type_logement', 'frequence_utilisation', 'budget_mensuel']).size().values
 
-5. **Propositions de valeur** : Mettre l'accent sur le gain de temps, la réduction du stress et l'amélioration de la qualité de vie étudiante.
+# Transformation des données pour un graphique en bulles
+fig = px.scatter(
+    synthese_df,
+    x='frequence_utilisation',  # Quand : fréquence d'utilisation
+    y='budget_mensuel',         # Combien : budget mensuel
+    size='count',               # Taille des bulles : nombre d'étudiants
+    color='interet_service',    # Qui : niveau d'intérêt
+    facet_col='type_logement',  # Où : type de logement
+    hover_data={
+        'prestation_complet': ':.2f',    # Intérêt pour ménage complet
+        'prestation_zones': ':.2f',      # Intérêt pour zones spécifiques
+        'prestation_repassage': ':.2f',  # Intérêt pour repassage
+        'prestation_lessive': ':.2f',    # Intérêt pour lessive
+        'prestation_rangement': ':.2f',  # Intérêt pour rangement
+        'nb_occupants': ':.1f'           # Nombre moyen d'occupants
+    },
+    title="Synthèse : Qui, Quoi, Quand, Où et Combien",
+    labels={
+        'frequence_utilisation': 'Fréquence d’utilisation préférée',
+        'budget_mensuel': 'Budget mensuel',
+        'interet_service': 'Niveau d’intérêt',
+        'type_logement': 'Type de logement',
+        'count': 'Nombre d’étudiants'
+    },
+    height=800,  # Hauteur augmentée pour un grand graphique
+    category_orders={
+        'interet_service': ordre_modalites,  # Ordre défini précédemment
+        'frequence_utilisation': ['Une fois par mois', 'Une fois toutes les deux semaines', 'Une fois par semaine', 'Plusieurs fois par semaine'],
+        'budget_mensuel': ['<5000', '5000-10000', '15000-20000']
+    },
+    color_discrete_map={
+        'Pas du tout intéressé(e)': 'darkred',
+        'Plutôt pas intéressé(e)': 'orangered',
+        'Indécis(e)': 'gold',
+        'Plutôt intéressé(e)': 'lightgreen',
+        'Très intéressé(e)': 'green'
+    }
+)
 
-Cette analyse suggère qu'il existe une opportunité viable pour un service de ménage adapté aux besoins spécifiques des étudiants de l'ENSEA, à condition d'adopter une approche ciblée et flexible.
+# Mise en forme du graphique
+fig.update_traces(
+    marker=dict(
+        sizemode='area',
+        sizeref=2.*max(synthese_df['count'])/(40.**2),  # Normalisation de la taille des bulles
+        line=dict(width=1, color='DarkSlateGrey')
+    )
+)
+
+fig.update_layout(
+    showlegend=True,
+    legend_title_text='Niveau d’intérêt',
+    title_font_size=20,
+    margin=dict(l=50, r=50, t=100, b=50),
+    plot_bgcolor='white',
+    paper_bgcolor='white'
+)
+
+# Affichage du graphique dans Streamlit
+st.plotly_chart(fig, use_container_width=True)
+
+st.markdown("""
+### Interprétation
+- **Qui** : Les bulles sont colorées selon le niveau d’intérêt, permettant d’identifier les segments les plus réceptifs.
+- **Quoi** : Les données au survol montrent l’intérêt moyen pour chaque type de prestation (ménage complet, zones spécifiques, etc.).
+- **Quand** : L’axe X indique la fréquence d’utilisation souhaitée.
+- **Où** : Les colonnes séparent les données par type de logement.
+- **Combien** : L’axe Y montre le budget mensuel disponible.
+- **Taille des bulles** : Représente le nombre d’étudiants dans chaque combinaison.
+
+Ce graphique met en évidence les opportunités clés, comme les étudiants en colocation avec un budget moyen, très intéressés par un ménage complet hebdomadaire, ou ceux en studio prêts à payer davantage pour des services ponctuels.
 """)
 
 # ----------------------- SIDEBAR FOR FILTERS -----------------------
@@ -916,4 +956,4 @@ with st.sidebar:
     interet_filter = st.multiselect("Intérêt pour le service", df['interet_service'].unique(), default=df['interet_service'].unique())
     
     st.markdown("---")
-    st.markdown("**Note:** Cette application utilise des données simulées à des fins de démonstration. Dans un cas réel, les données seraient chargées à partir d'un fichier CSV ou d'une base de données.")
+    st.markdown("**Note:** .")
