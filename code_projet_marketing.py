@@ -824,33 +824,6 @@ with col1:
                      labels=dict(x="Jour", y="Plage horaire", color="Proportion"),
                      color_continuous_scale='Viridis')
     st.plotly_chart(fig, use_container_width=True)
-    
-    # Graphique en quadrants pour les créneaux optimaux
-    # Création d'un score d'optimalité pour chaque jour/plage
-    jours_optimaux = jour_plage.unstack().reset_index()
-    jours_optimaux.columns = ['jour', 'plage', 'score']
-    
-    # Score sur l'axe des x: proportion d'étudiants disponibles
-    # Score sur l'axe des y: facilité opérationnelle (simulée)
-    np.random.seed(42)
-    jours_optimaux['facilite_operationnelle'] = np.random.uniform(0.3, 0.9, len(jours_optimaux))
-    
-    fig = px.scatter(jours_optimaux, x='score', y='facilite_operationnelle', 
-                     color='jour', symbol='plage', size='score',
-                     labels={'score': 'Demande étudiante', 'facilite_operationnelle': 'Facilité opérationnelle'},
-                     title="Créneaux optimaux pour les services")
-    
-    # Ajouter des lignes pour diviser en quadrants
-    fig.add_hline(y=jours_optimaux['facilite_operationnelle'].median(), line_dash="dash", line_color="gray")
-    fig.add_vline(x=jours_optimaux['score'].median(), line_dash="dash", line_color="gray")
-    
-    # Ajouter des annotations pour les quadrants
-    fig.add_annotation(x=0.9, y=0.9, text="Créneaux optimaux", showarrow=False, xref="paper", yref="paper")
-    fig.add_annotation(x=0.1, y=0.9, text="Faciles mais peu demandés", showarrow=False, xref="paper", yref="paper")
-    fig.add_annotation(x=0.9, y=0.1, text="Demandés mais difficiles", showarrow=False, xref="paper", yref="paper")
-    fig.add_annotation(x=0.1, y=0.1, text="À éviter", showarrow=False, xref="paper", yref="paper")
-    
-    st.plotly_chart(fig, use_container_width=True)
 
 with col2:
     st.markdown("""
