@@ -1,0 +1,59 @@
+Rajoute a ce code, une page principale d'acceuil qui comportera une partie pour insérer une image de taille retangulaire. Rajouter en dessous le thème de la présentation "Étude sur la pertinence de proposer des services de ménage aux étudiants de l'ENSEA" et le sommaire qui se déroule comme suit :
+
+1. Déroulement du terrain
+2. Principaux résultats
+2.1 Analyse du marché et de la demande
+2.2 Analyse des besoins spécifiques
+2.3 Modélisation de l'offre
+2.4 Planification opérationnelle
+3. Conclusion et recommandations
+
+et les noms de ceux qui présente:
+- AGBOGLA Komaln Richard
+- BANSIMBA Gautier
+- GBONOU Olivier.
+
+1. Déroulement du terrain (Richard)
+2. Principaux résultats
+2.1 Analyse du marché et de la demande (Gautier (11) & Richard (4))
+2.2 Analyse des besoins spécifiques (Olivier (5))
+2.3 Modélisation de l'offre (Richard (6), Olivier (3))
+2.4 Planification opérationnelle (Olivier)
+3. Conclusion et recommandations ()
+
+
+Voici le thème de mon etude : "Étude sur la pertinence de proposer des services de ménage aux étudiants de l'ENSEA". Voici les resultat des analyses :
+
+- Il y a deux fois plus de garçon que de fille dans l'échantillon
+- Les étudiants sont majoritairement en résidence universitaire où ils sont deux par chambre.
+- Les étudiants sont majoritairment de nationalité ivoirienne.
+- Le NPS d’intention est de 10.2, ce qui signifie que l'intérêt des étudiants de l'ENSEA pour un service de ménage est positif mais modéré.
+- En effectifs bruts, les hommes sont les plus intéressé par le service.
+- En effectifs bruts, ceux qui sont en résidence universitaire sont les plus intéressé par le service
+- En effectifs bruts, ceux qui sont en première année Analyste Statisticien sont les plus intéressés par le service.
+- En proportion relative, les etudiants des nationalités suivantes sont les plus intéressés : Congo, Niger, Tchad, Togo.
+- Les individus désintéressé par le service le sont en majorité parce qu'ils préfèrent faire le ménage eux-meme.
+- Ceux qui sont plutôt intéressé par le service ont pour freins le manque de temps et de motivations dans les périodes d'examens et de projets.
+- Ceux qui sont très intéressé par le service ont pour freins le Maque de temps et de motivations régulièrement tout au long de l'année.
+- Les étudiants en résidence universitaire consacrent plus de temps au ménage que ceux vivant en appartement, en colocation ou chez leurs parents.
+- Les étudiants en colocation ont très souvent des difficultés à concilier études et ménage et ils font le ménage plus de 2h da façon hebdomadaire.
+- Les étudiants en Appartement n'ont jamais de difficulté à concilier études et ménage et ils font le ménage moins de 30 minutes hebdomadairement. Et ceux qui un peu de difficultés font généralement plus d'une heure de ménage.
+- Le temps consacré au ménage est modérément corrélé positivement avec la perception du linge comme une tâche contraignante.
+- les étudiants de l'ENSEA vivant chez leurs parents (en bleu) accordent plus d'importance à des tâches comme la cuisine et le ménage (sdb, sols), tandis que ceux en colocation ou en résidence universitaire (en rouge) privilégient des aspects comme le linge et la precision.
+- Les périodes les plus difficiles pour gerer le menage sont les périodes de projets intensifs
+- La majorité des étudiants consacre un budget mensuel inférieur à 5000 FCFA pour le ménage.
+- Les étudiant qui sont deux dans leur logement (ceux qui sont en residence universitaire) sont les plus nombreux et consacre un budget mensuel inférieur à 5000 FCFA au ménage.
+-  Les prestations préféré par les étudiants sont les suivants : Lessive, Ménage complet, Zones spécifiques.
+- les prestations de service comme le repassage et lessive sont fortement corrélés.
+- Les individus preferent plus avoir le service de menage une fois par semaine.
+- La majorité des individus sont intéressé par un service d'abonnement.
+- La majorité des individu préfèrent etre présent pendant toute la durée du ménage.
+- La majorité des individus ne préfèrent pas donner confier leur clés.
+- les étudiants de l'ENSEA sont majoritairement disponibles pour des services de ménage le samedi de 8h a 18h, avec une disponibilité notable aussi le dimanche soir entre 18h et 21h.
+
+# ----------------------- CONCLUSION -----------------------
+st.header("Conclusion")
+st.markdown("""
+""")
+
+Complète le code de la partie conclusion et recommandations en tenant compte de tout ce qu'il ya comme résultat des analyses. Pas plus de 5 recommandations.
