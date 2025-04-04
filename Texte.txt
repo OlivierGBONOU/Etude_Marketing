@@ -1,17 +1,4 @@
-Rajoute a ce code, une page principale d'acceuil qui comportera une partie pour insérer une image de taille retangulaire. Rajouter en dessous le thème de la présentation "Étude sur la pertinence de proposer des services de ménage aux étudiants de l'ENSEA" et le sommaire qui se déroule comme suit :
-
-1. Déroulement du terrain
-2. Principaux résultats
-2.1 Analyse du marché et de la demande
-2.2 Analyse des besoins spécifiques
-2.3 Modélisation de l'offre
-2.4 Planification opérationnelle
-3. Conclusion et recommandations
-
-et les noms de ceux qui présente:
-- AGBOGLA Komaln Richard
-- BANSIMBA Gautier
-- GBONOU Olivier.
+Sommaire :
 
 1. Déroulement du terrain (Richard)
 2. Principaux résultats
@@ -22,7 +9,7 @@ et les noms de ceux qui présente:
 3. Conclusion et recommandations ()
 
 
-Voici le thème de mon etude : "Étude sur la pertinence de proposer des services de ménage aux étudiants de l'ENSEA". Voici les resultat des analyses :
+Interpretations :
 
 - Il y a deux fois plus de garçon que de fille dans l'échantillon
 - Les étudiants sont majoritairement en résidence universitaire où ils sont deux par chambre.
@@ -50,10 +37,3 @@ Voici le thème de mon etude : "Étude sur la pertinence de proposer des service
 - La majorité des individu préfèrent etre présent pendant toute la durée du ménage.
 - La majorité des individus ne préfèrent pas donner confier leur clés.
 - les étudiants de l'ENSEA sont majoritairement disponibles pour des services de ménage le samedi de 8h a 18h, avec une disponibilité notable aussi le dimanche soir entre 18h et 21h.
-
-# ----------------------- CONCLUSION -----------------------
-st.header("Conclusion")
-st.markdown("""
-""")
-
-Complète le code de la partie conclusion et recommandations en tenant compte de tout ce qu'il ya comme résultat des analyses. Pas plus de 5 recommandations.
