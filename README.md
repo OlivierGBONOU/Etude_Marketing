@@ -62,7 +62,7 @@ L'application s’ouvrira automatiquement dans votre navigateur.
 
 ## 📷 Capture d'écran
 
-![Illustration](menage.jpg)
+![Illustration](apercu.jpeg)
 
 ## 📜 Licence
 
